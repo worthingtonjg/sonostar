@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Standard Dome Calculator</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <p class="eyebrow">Standard 1/2&quot; PVC Dome Hubs</p>
+      <h1>Standard Dome Calculator</h1>
+      <p class="lede">
+        Local replica of the Sonostar standard dome calculator using the same dome
+        measurement formulas, strut coefficients, and the built-in 2.28 inch hub deduction.
+      </p>
+    </section>
+
+    <section class="calculator-shell">
+      <aside class="dome-list">
+        <h2>Dome Types</h2>
+        <div id="dome-tabs" class="tab-list" role="tablist" aria-label="Dome types"></div>
+      </aside>
+
+      <section class="calculator-panel">
+        <div class="panel-header">
+          <div>
+            <p id="dome-subtitle" class="panel-kicker"></p>
+            <h2 id="dome-title"></h2>
+          </div>
+          <p class="hub-note">PVC strut lengths already subtract 2.28 in for standard connectors.</p>
+        </div>
+
+        <div class="hero-card">
+          <div class="hero-copy">
+            <p class="hero-label">Selected Dome</p>
+            <p id="dome-description" class="hero-description"></p>
+          </div>
+          <img id="dome-image" class="dome-image" alt="" loading="lazy">
+        </div>
+
+        <form id="calculator-form" class="controls">
+          <label>
+            <span>Length Type</span>
+            <select id="input-type" name="input-type">
+              <option value="diameter">Diameter</option>
+              <option value="radius">Radius</option>
+              <option value="circumference">Circumference</option>
+              <option value="height">Height</option>
+              <option value="floor-area">Floor Area</option>
+              <option value="surface-area">Surface Area</option>
+            </select>
+          </label>
+
+          <label>
+            <span>Value</span>
+            <div class="input-row">
+              <input id="input-value" name="input-value" type="number" min="0" step="0.01" value="10">
+              <span class="unit-badge">ft</span>
+            </div>
+          </label>
+
+          <button type="submit">Calculate</button>
+        </form>
+
+        <div class="meta-grid">
+          <article>
+            <span class="meta-label">4 Star Hubs</span>
+            <strong id="count-4-star"></strong>
+          </article>
+          <article>
+            <span class="meta-label">5 Star Hubs</span>
+            <strong id="count-5-star"></strong>
+          </article>
+          <article>
+            <span class="meta-label">6 Star Hubs</span>
+            <strong id="count-6-star"></strong>
+          </article>
+        </div>
+
+        <div class="results-grid">
+          <article><span>Radius</span><strong id="metric-radius"></strong></article>
+          <article><span>Diameter</span><strong id="metric-diameter"></strong></article>
+          <article><span>Height</span><strong id="metric-height"></strong></article>
+          <article><span>Circumference</span><strong id="metric-circumference"></strong></article>
+          <article><span>Floor Area</span><strong id="metric-floor-area"></strong></article>
+          <article><span>Surface Area</span><strong id="metric-surface-area"></strong></article>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Type</th>
+                <th>Length (inch)</th>
+                <th>Length (cm)</th>
+                <th>Color</th>
+                <th>Count</th>
+              </tr>
+            </thead>
+            <tbody id="strut-table-body"></tbody>
+          </table>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
