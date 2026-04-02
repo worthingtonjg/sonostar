@@ -1,4 +1,4 @@
-const HUB_DEDUCTION_INCHES = 2.28;
+const DEFAULT_HUB_DEDUCTION_INCHES = 2.28;
 
 const DOMES = [
   {
@@ -126,7 +126,9 @@ const DOMES = [
 const state = {
   domeId: DOMES[0].id,
   inputType: "diameter",
-  inputValue: 10
+  inputValue: 10,
+  applyHubDeduction: true,
+  hubDeductionInches: DEFAULT_HUB_DEDUCTION_INCHES
 };
 
 const elements = {
@@ -137,7 +139,10 @@ const elements = {
   image: document.querySelector("#dome-image"),
   inputType: document.querySelector("#input-type"),
   inputValue: document.querySelector("#input-value"),
+  applyHubDeduction: document.querySelector("#apply-hub-deduction"),
+  hubDeductionInches: document.querySelector("#hub-deduction-inches"),
   form: document.querySelector("#calculator-form"),
+  hubNote: document.querySelector("#hub-note"),
   count4: document.querySelector("#count-4-star"),
   count5: document.querySelector("#count-5-star"),
   count6: document.querySelector("#count-6-star"),
@@ -147,6 +152,7 @@ const elements = {
   circumference: document.querySelector("#metric-circumference"),
   floorArea: document.querySelector("#metric-floor-area"),
   surfaceArea: document.querySelector("#metric-surface-area"),
+  totalStrutLength: document.querySelector("#metric-total-strut-length"),
   strutTableBody: document.querySelector("#strut-table-body")
 };
 
@@ -181,25 +187,29 @@ function valueToRadius(value, inputType, dome) {
   }
 }
 
-function calculateDome(radius, dome) {
+function calculateDome(radius, dome, applyHubDeduction, hubDeductionInches) {
   const diameter = radius * 2;
   const circumference = 2 * Math.PI * radius;
   const height = radius * dome.heightFactor;
   const floorArea = dome.floorAreaFactor * radius * radius;
   const surfaceArea = 2 * Math.PI * radius * radius;
+  const hubDeduction = applyHubDeduction ? hubDeductionInches : 0;
 
   const struts = dome.struts.map((strut) => {
-    const inches = radius * strut.coefficient * 12 - HUB_DEDUCTION_INCHES;
-    const cm = inches * 2.54;
+    const inches = radius * strut.coefficient * 12 - hubDeduction;
 
     return {
       ...strut,
-      inches,
-      cm
+      inches
     };
   });
 
-  return { radius, diameter, circumference, height, floorArea, surfaceArea, struts };
+  const totalStrutLengthInches = struts.reduce(
+    (sum, strut) => sum + strut.inches * strut.count,
+    0
+  );
+
+  return { radius, diameter, circumference, height, floorArea, surfaceArea, struts, totalStrutLengthInches };
 }
 
 function renderTabs() {
@@ -223,10 +233,17 @@ function renderTabs() {
 function renderSummary(dome, result) {
   elements.title.textContent = `${dome.name} Dome`;
   elements.subtitle.textContent = "Standard Dome Calculator";
+  const deductionValueText = `${state.hubDeductionInches.toFixed(2)} in`;
+  const deductionDescription = state.applyHubDeduction
+    ? `with a ${deductionValueText} hub deduction per strut.`
+    : "with no hub deduction applied to strut lengths.";
   elements.description.textContent =
-    `${dome.name} uses Sonostar's extracted ${dome.domeType} strut coefficient set and standard hub deduction.`;
+    `${dome.name} uses Sonostar's extracted ${dome.domeType} strut coefficient set ${deductionDescription}`;
   elements.image.src = dome.image;
   elements.image.alt = `${dome.name} geodesic dome`;
+  elements.hubNote.textContent = state.applyHubDeduction
+    ? `PVC strut lengths currently subtract ${deductionValueText} for connectors.`
+    : "PVC strut lengths currently do not subtract connector deduction.";
   elements.count4.textContent = String(dome.hubs.fourStar);
   elements.count5.textContent = String(dome.hubs.fiveStar);
   elements.count6.textContent = String(dome.hubs.sixStar);
@@ -237,6 +254,7 @@ function renderSummary(dome, result) {
   elements.circumference.textContent = formatFeet(result.circumference);
   elements.floorArea.textContent = formatSquareFeet(result.floorArea);
   elements.surfaceArea.textContent = formatSquareFeet(result.surfaceArea);
+  elements.totalStrutLength.textContent = formatFeet(result.totalStrutLengthInches / 12);
 }
 
 function renderStrutTable(struts) {
@@ -247,7 +265,6 @@ function renderStrutTable(struts) {
     row.innerHTML = `
       <td>${strut.type}</td>
       <td>${strut.inches.toFixed(2)} inch</td>
-      <td>${strut.cm.toFixed(2)} cm</td>
       <td>
         <span class="color-chip">
           <span class="color-dot" style="background:${strut.swatch}"></span>
@@ -263,10 +280,13 @@ function renderStrutTable(struts) {
 function render() {
   const dome = getActiveDome();
   const radius = valueToRadius(Number(state.inputValue), state.inputType, dome);
-  const result = calculateDome(radius, dome);
+  const result = calculateDome(radius, dome, state.applyHubDeduction, state.hubDeductionInches);
 
   elements.inputType.value = state.inputType;
   elements.inputValue.value = String(state.inputValue);
+  elements.applyHubDeduction.checked = state.applyHubDeduction;
+  elements.hubDeductionInches.value = String(state.hubDeductionInches);
+  elements.hubDeductionInches.disabled = !state.applyHubDeduction;
 
   renderTabs();
   renderSummary(dome, result);
@@ -277,12 +297,33 @@ elements.form.addEventListener("submit", (event) => {
   event.preventDefault();
 
   const inputValue = Number(elements.inputValue.value);
+  const hubDeductionInches = Number(elements.hubDeductionInches.value);
   if (!Number.isFinite(inputValue) || inputValue <= 0) {
+    return;
+  }
+  if (!Number.isFinite(hubDeductionInches) || hubDeductionInches < 0) {
     return;
   }
 
   state.inputType = elements.inputType.value;
   state.inputValue = inputValue;
+  state.applyHubDeduction = elements.applyHubDeduction.checked;
+  state.hubDeductionInches = hubDeductionInches;
+  render();
+});
+
+elements.applyHubDeduction.addEventListener("change", () => {
+  state.applyHubDeduction = elements.applyHubDeduction.checked;
+  render();
+});
+
+elements.hubDeductionInches.addEventListener("change", () => {
+  const hubDeductionInches = Number(elements.hubDeductionInches.value);
+  if (!Number.isFinite(hubDeductionInches) || hubDeductionInches < 0) {
+    elements.hubDeductionInches.value = String(state.hubDeductionInches);
+    return;
+  }
+  state.hubDeductionInches = hubDeductionInches;
   render();
 });
 

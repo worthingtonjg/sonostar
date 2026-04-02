@@ -13,7 +13,7 @@
       <h1>Standard Dome Calculator</h1>
       <p class="lede">
         Local replica of the Sonostar standard dome calculator using the same dome
-        measurement formulas, strut coefficients, and the built-in 2.28 inch hub deduction.
+        measurement formulas and strut coefficients, with an optional customizable hub deduction.
       </p>
     </section>
 
@@ -29,7 +29,7 @@
             <p id="dome-subtitle" class="panel-kicker"></p>
             <h2 id="dome-title"></h2>
           </div>
-          <p class="hub-note">PVC strut lengths already subtract 2.28 in for standard connectors.</p>
+          <p id="hub-note" class="hub-note">PVC strut lengths currently subtract 2.28 in for standard connectors.</p>
         </div>
 
         <div class="hero-card">
@@ -61,6 +61,19 @@
             </div>
           </label>
 
+          <label class="checkbox-label">
+            <input id="apply-hub-deduction" name="apply-hub-deduction" type="checkbox" checked>
+            <span>Subtract hub deduction per strut</span>
+          </label>
+
+          <label>
+            <span>Hub Deduction</span>
+            <div class="input-row">
+              <input id="hub-deduction-inches" name="hub-deduction-inches" type="number" min="0" step="0.01" value="2.28">
+              <span class="unit-badge">in</span>
+            </div>
+          </label>
+
           <button type="submit">Calculate</button>
         </form>
 
@@ -86,6 +99,7 @@
           <article><span>Circumference</span><strong id="metric-circumference"></strong></article>
           <article><span>Floor Area</span><strong id="metric-floor-area"></strong></article>
           <article><span>Surface Area</span><strong id="metric-surface-area"></strong></article>
+          <article><span>Total Strut Length</span><strong id="metric-total-strut-length"></strong></article>
         </div>
 
         <div class="table-wrap">
@@ -94,7 +108,6 @@
               <tr>
                 <th>Type</th>
                 <th>Length (inch)</th>
-                <th>Length (cm)</th>
                 <th>Color</th>
                 <th>Count</th>
               </tr>
